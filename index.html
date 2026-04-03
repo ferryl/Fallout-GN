@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal ROBCO</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="crt-overlay"></div>
+    <div class="terminal-container">
+        <!-- New wrapper for scanline effect -->
+        <div class="scanline-effect-wrapper">
+            <header>
+                <h1>SYSTEME D'EXPLOITATION UNIFIE ROBCO INDUSTRIES</h1>
+                <h2>COPYRIGHT 2075-2077 ROBCO INDUSTRIES</h2>
+                <div id="password-prompt">-Serveur 1-</div>
+                <br>
+                <div>Entrer le Mot de Passe</div>
+                <div id="attempts-container">
+                    <span id="attempts-remaining"></span>
+                    <span id="attempts-blocks"></span>
+                </div>
+                <br>
+            </header>
+            <main class="grid-container">
+                <div class="column" id="col-1"></div>
+                <div class="column" id="col-2"></div>
+            </main>
+            <aside class="console-output" id="console">
+                <!-- Historique des clics -->
+            </aside>
+            <div class="scanline-bar"></div>
+            <div class="distorted-layer"></div>
+        </div>
+    </div>
+    <script src="words.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
