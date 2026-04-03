@@ -1,0 +1,76 @@
+:root {
+    --phosphor: #16c60c;
+    --bg-color: #000000;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--phosphor);
+    font-family: 'VT323', monospace;
+    font-size: 24px;
+    margin: 0;
+    overflow: hidden;
+    text-shadow: 0 0 5px var(--phosphor); /* Glow effect */
+}
+
+.crt-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.15),
+        rgba(0, 0, 0, 0.15) 1px,
+        transparent 1px,
+        transparent 2px
+    );
+    pointer-events: none;
+    z-index: 100;
+}
+
+.terminal-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px 40px;
+    height: 100vh;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.grid-container {
+    display: flex;
+    gap: 40px;
+    flex-grow: 1;
+}
+
+.column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.hex-addr {
+    display: inline-block;
+    width: 80px;
+}
+
+.word:hover {
+    background-color: var(--phosphor);
+    color: var(--bg-color);
+    cursor: pointer;
+}
+
+.special:hover {
+    background-color: var(--phosphor);
+    color: var(--bg-color);
+    cursor: pointer;
+}
+
+.word.removed {
+    color: var(--phosphor);
+    opacity: 0.3;
+    pointer-events: none;
+}
