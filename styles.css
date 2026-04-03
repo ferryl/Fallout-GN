@@ -1,6 +1,22 @@
 :root {
-    --phosphor: #16c60c;
-    --bg-color: #000000;
+  --phosphor: #16c60c;
+  --bg-color: #000000;
+
+  --crt-red: rgb(218, 49, 49);
+  --crt-green: rgb(112, 159, 115);
+  --crt-blue: rgb(40, 129, 206);
+}
+
+/* Global */
+html {
+  font-size: 1.5rem;
+  font-family: "Courier New", monospace;
+  min-height: 100%;
+}
+main {
+  height: 100vh;
+  height: 100dvh;
+  color: rgba(255, 255, 255, 0.75);
 }
 
 body {
@@ -38,65 +54,45 @@ body {
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    position: relative; /* Ensure children are positioned relative to this */
+    position: relative; /* Keep this for child absolute positioning */
+
+    /* New CRT styles */
+    background-color: rgb(25, 25, 30); /* New background color */
+    text-shadow: 0 0 0.2em currentColor, 1px 1px rgba(255, 0, 255, 0.5),
+        -1px -1px rgba(0, 255, 255, 0.4);
+    
+    /* Pseudo-elements for scanlines */
+    &:before,
+    &:after {
+      content: "";
+      transform: translateZ(0);
+      pointer-events: none;
+      //opacity: 0.5; /* Keeping original opacity comment as it might be relevant for desired effect */
+      mix-blend-mode: overlay;
+      position: absolute;
+      height: 100%;
+      width: 100%;
+      left: 0;
+      top: 0;
+      z-index: 1;
+    }
+
+    &:before {
+      background: repeating-linear-gradient(
+        var(--crt-red) 0px,
+        var(--crt-green) 2px,
+        var(--crt-blue) 4px
+      );
+    }
+    &:after {
+      background: repeating-linear-gradient(
+        90deg,
+        var(--crt-red) 1px,
+        var(--crt-green) 2px,
+        var(--crt-blue) 3px
+      );
+    }
 }
-
-.scanline-effect-wrapper {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden; /* Contains the scanline and distorted layer */
-}
-
-.scanline-bar {
-    position: absolute;
-    top: -5%; /* Start slightly above to ensure full sweep */
-    left: 0;
-    width: 100%;
-    height: 10px; /* Height of the scanline bar */
-    background: rgba(22, 198, 12, 0.4); /* Phosphor green */
-    box-shadow: 0 0 10px rgba(22, 198, 12, 0.6); /* Glow effect */
-    z-index: 4; /* Above main content and distorted layer */
-    pointer-events: none; /* Allows interaction with elements beneath */
-    animation: bar-scan 12s linear infinite; /* Animation defined below */
-}
-
-.distorted-layer {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 3; /* Below scanline bar, above main content */
-
-    /* The actual distortion effects */
-    transform: translateX(2px) skewX(-2deg) scale(1.01);
-    transform-origin: center left;
-    text-shadow: 0 0 8px var(--phosphor), 0 0 10px var(--phosphor);
-    color: #1aff13; /* Slightly brighter green for distortion */
-    font-weight: bold;
-
-    /* Mask to reveal distortion only at scanline */
-    -webkit-mask-image: linear-gradient(to bottom, transparent, black 5px, black 15px, transparent); /* A 10px visible band */
-    -webkit-mask-repeat: no-repeat;
-    -webkit-mask-size: 100% 20px; /* The band is 20px high */
-    animation: mask-scan 12s linear infinite; /* Synchronized with bar-scan */
-}
-
-/* Keyframes for animations */
-@keyframes bar-scan {
-    0% { top: -5%; } /* Start above */
-    100% { top: 105%; } /* End below */
-}
-
-@keyframes mask-scan {
-    0% { -webkit-mask-position: 0% -20px; } /* Start mask completely above by its own height */
-    100% { -webkit-mask-position: 0% calc(100% + 20px); } /* End mask completely below by its own height */
-}
-
 
 .grid-container {
     display: flex;
@@ -131,4 +127,36 @@ body {
     color: var(--phosphor);
     opacity: 0.3;
     pointer-events: none;
+}
+
+/* Other utility classes from your provided CSS */
+.pink {
+  color: pink;
+}
+.yellow {
+  color: yellow;
+}
+.lightblue {
+  color: lightblue;
+}
+.code { /* This assumes a specific HTML structure not currently present */
+  color: attr(data-color);
+  animation: typewriter 1s steps(14) 1s 1 normal both;
+  line-height: 1;
+  margin: 0;
+  display: inline-block;
+  white-space: nowrap;
+  overflow-x: hidden;
+}
+.cursor { /* This assumes a specific HTML structure not currently present */
+  display: inline-block;
+  animation: blinkTextCursor 500ms infinite normal;
+}
+@keyframes typewriter {
+  from { width: 0; }
+  to { width: 100%; }
+}
+@keyframes blinkTextCursor {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
