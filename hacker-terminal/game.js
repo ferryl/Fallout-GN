@@ -129,10 +129,8 @@ function handleWordClick(guess) {
 
   if (guess === gameState.password) {
     updateConsole("Correspondance Exacte!");
-    updateConsole("Veuillez Patienter");
-    updateConsole("Pendant que le Systeme");
-    updateConsole("Est Accede.");
     gameState.isLocked = true;
+    triggerEndSequence(true); // Appel au succès
   } else {
     gameState.attempts--;
     const matches = getMatchCount(guess, gameState.password);
@@ -144,6 +142,7 @@ function handleWordClick(guess) {
     if (gameState.attempts <= 0) {
       gameState.isLocked = true;
       updateConsole("Verrouillage en cours.");
+      triggerEndSequence(false); // Appel à l'échec
     }
   }
 }
@@ -263,4 +262,28 @@ function triggerEndSequence(isSuccess) {
         });
 
     }, 500); // 0.5s de glitch
+}
+
+function resetGame() {
+    const mainContainer = document.querySelector('main');
+    const headerContainer = document.querySelector('header');
+    const consoleContainer = document.getElementById('console');
+    const endScreen = document.getElementById('end-screen');
+
+    // Restaurer l'affichage
+    mainContainer.style.display = ''; 
+    headerContainer.style.display = '';
+    consoleContainer.style.display = '';
+    
+    // Cacher l'écran de fin
+    endScreen.classList.add('hidden');
+    
+    // Réinitialiser le state
+    gameState.attempts = 4;
+    gameState.history = [];
+    gameState.isLocked = false;
+    document.getElementById("console").innerHTML = "";
+    
+    // Relancer
+    initGame();
 }
