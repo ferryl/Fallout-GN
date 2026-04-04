@@ -198,3 +198,73 @@ body::after {
         opacity: 1;
     }
 }
+
+/* --- End Screen Styles --- */
+#end-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-color);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    box-sizing: border-box;
+}
+
+#end-screen.hidden {
+    display: none;
+}
+
+#end-typewriter {
+    position: absolute;
+    top: 40px;
+    left: 40px;
+    font-size: 24px;
+}
+
+#end-center-text {
+    font-size: 64px;
+    text-align: center;
+    animation: blinkTextCursor 2s infinite normal;
+    opacity: 0;
+}
+
+#end-center-text.visible {
+    opacity: 1;
+}
+
+#end-restart-prompt {
+    position: absolute;
+    bottom: 40px;
+    font-size: 24px;
+    animation: blinkTextCursor 1s infinite normal;
+    cursor: pointer;
+}
+
+#end-restart-prompt.hidden {
+    display: none;
+}
+
+#end-restart-prompt:hover {
+    background-color: var(--phosphor);
+    color: var(--bg-color);
+}
+
+/* Glitch Effect on the main container */
+.glitch-effect {
+    animation: glitch-anim 0.5s linear infinite;
+}
+
+@keyframes glitch-anim {
+    0% { transform: translate(0) }
+    20% { transform: translate(-5px, 2px); text-shadow: 2px 0 var(--crt-red), -2px 0 var(--crt-blue); }
+    40% { transform: translate(-5px, -2px); text-shadow: -2px 0 var(--crt-red), 2px 0 var(--crt-blue); }
+    60% { transform: translate(5px, 2px); text-shadow: 2px 0 var(--crt-red), -2px 0 var(--crt-blue); }
+    80% { transform: translate(5px, -2px); text-shadow: -2px 0 var(--crt-red), 2px 0 var(--crt-blue); }
+    100% { transform: translate(0) }
+}

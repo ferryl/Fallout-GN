@@ -1,0 +1,186 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+  .mock-terminal {
+    background-color: #000000;
+    color: #16c60c;
+    font-family: 'VT323', monospace;
+    font-size: 20px;
+    padding: 20px;
+    height: 300px;
+    overflow: hidden;
+    position: relative;
+    border: 2px solid #333;
+    border-radius: 8px;
+    text-shadow: 0 0 5px #16c60c;
+  }
+
+  /* Shared subtle static scanlines */
+  .mock-terminal::before {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.15),
+      rgba(0, 0, 0, 0.15) 1px,
+      transparent 1px,
+      transparent 2px
+    );
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  /* Option A: Light scanline without much distortion */
+  .scanline-a::after {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 10px;
+    background: rgba(22, 198, 12, 0.2);
+    opacity: 0.5;
+    z-index: 3;
+    pointer-events: none;
+    animation: scanA 6s linear infinite;
+  }
+  @keyframes scanA {
+    0% { top: -10%; }
+    100% { top: 110%; }
+  }
+
+  /* Option B: Scanline with RGB split distortion */
+  .scanline-b .terminal-text {
+    animation: textDistortB 6s linear infinite;
+  }
+  .scanline-b::after {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 15px;
+    background: linear-gradient(to bottom, transparent, rgba(22, 198, 12, 0.4), transparent);
+    z-index: 3;
+    pointer-events: none;
+    animation: scanB 6s linear infinite;
+  }
+  @keyframes scanB {
+    0% { top: -10%; }
+    100% { top: 110%; }
+  }
+  @keyframes textDistortB {
+    0%, 40%, 60%, 100% { text-shadow: 0 0 5px #16c60c; }
+    50% { 
+      text-shadow: 2px 0 3px rgba(255,0,0,0.8), -2px 0 3px rgba(0,0,255,0.8), 0 0 8px #16c60c;
+    }
+  }
+
+  /* Option C: Scanline with vertical jitter/wobble distortion */
+  .scanline-c .terminal-text {
+    animation: textJitterC 6s linear infinite;
+  }
+  .scanline-c::after {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 20px;
+    background: linear-gradient(to bottom, transparent, rgba(22, 198, 12, 0.5), transparent);
+    z-index: 3;
+    pointer-events: none;
+    animation: scanC 6s linear infinite;
+  }
+  @keyframes scanC {
+    0% { top: -10%; }
+    100% { top: 110%; }
+  }
+  @keyframes textJitterC {
+    0%, 45%, 55%, 100% { transform: translateY(0) skewX(0); }
+    48% { transform: translateY(2px) skewX(1deg); }
+    50% { transform: translateY(-2px) skewX(-2deg); }
+    52% { transform: translateY(1px) skewX(1deg); }
+  }
+
+  .terminal-text {
+    position: relative;
+    z-index: 1;
+  }
+</style>
+
+<h2>Quel type d'effet de balayage CRT préférez-vous ?</h2>
+<p class="subtitle">Voici 3 propositions avec différents niveaux de distorsion pour simuler l'écran.</p>
+
+<div class="cards">
+  <!-- Option A -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mock-terminal scanline-a">
+        <div class="terminal-text">
+          SYSTEME D'EXPLOITATION UNIFIE<br>
+          ROBCO INDUSTRIES<br>
+          <br>
+          Entrer le Mot de Passe<br>
+          4 ESSA(S) RESTANTS: ▮▮▮▮<br>
+          0xF13C  MODEM<br>
+          0xF148  WORLD<br>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A. Balayage Doux</h3>
+      <p>Une simple ligne lumineuse qui descend, sans déformer le texte. Très lisible.</p>
+    </div>
+  </div>
+
+  <!-- Option B -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mock-terminal scanline-b">
+        <div class="terminal-text">
+          SYSTEME D'EXPLOITATION UNIFIE<br>
+          ROBCO INDUSTRIES<br>
+          <br>
+          Entrer le Mot de Passe<br>
+          4 ESSA(S) RESTANTS: ▮▮▮▮<br>
+          0xF13C  MODEM<br>
+          0xF148  WORLD<br>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B. Distorsion Chromatique (RGB Split)</h3>
+      <p>La ligne lumineuse sépare légèrement les couleurs (rouge/bleu) lors de son passage pour un effet glitch.</p>
+    </div>
+  </div>
+
+  <!-- Option C -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mock-terminal scanline-c">
+        <div class="terminal-text">
+          SYSTEME D'EXPLOITATION UNIFIE<br>
+          ROBCO INDUSTRIES<br>
+          <br>
+          Entrer le Mot de Passe<br>
+          4 ESSA(S) RESTANTS: ▮▮▮▮<br>
+          0xF13C  MODEM<br>
+          0xF148  WORLD<br>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C. Distorsion Physique (Jitter)</h3>
+      <p>La ligne déplace et tord légèrement le texte (tremblement) lorsqu'elle passe dessus.</p>
+    </div>
+  </div>
+</div>

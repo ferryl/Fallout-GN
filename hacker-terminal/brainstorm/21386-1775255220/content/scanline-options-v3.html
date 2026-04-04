@@ -1,0 +1,152 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+  .mock-terminal {
+    background-color: #000000;
+    color: #16c60c;
+    font-family: 'VT323', monospace;
+    font-size: 20px;
+    padding: 20px;
+    height: 300px;
+    overflow: hidden;
+    position: relative;
+    border: 2px solid #333;
+    border-radius: 8px;
+    text-shadow: 0 0 5px #16c60c;
+  }
+
+  .mock-terminal::before {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.15),
+      rgba(0, 0, 0, 0.15) 1px,
+      transparent 1px,
+      transparent 2px
+    );
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .terminal-text {
+    position: relative;
+    z-index: 1;
+  }
+
+  .distorted-layer {
+    position: absolute;
+    top: 20px; left: 20px; right: 20px; bottom: 20px;
+    pointer-events: none;
+    z-index: 3;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, transparent 10px, black 15px, black 25px, transparent 30px, transparent 100%);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: 100% 40px;
+    animation: mask-scan 4s linear infinite;
+  }
+
+  .scanline-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 10px;
+    background: rgba(22, 198, 12, 0.4);
+    box-shadow: 0 0 10px rgba(22, 198, 12, 0.6);
+    z-index: 4;
+    pointer-events: none;
+    animation: bar-scan 4s linear infinite;
+  }
+
+  @keyframes mask-scan {
+    0% { -webkit-mask-position: 0 -40px; }
+    100% { -webkit-mask-position: 0 320px; }
+  }
+
+  @keyframes bar-scan {
+    0% { top: -20px; }
+    100% { top: 340px; }
+  }
+
+  /* Option A: Subtle Mix */
+  .mix-subtle .distorted-layer {
+    transform: translateX(2px) skewX(-2deg) scale(1.01);
+    transform-origin: center left;
+    text-shadow: 0 0 8px #16c60c, 0 0 10px #16c60c;
+    color: #1aff13;
+    font-weight: bold;
+  }
+
+  /* Option B: Strong Mix */
+  .mix-strong .distorted-layer {
+    transform: translateX(5px) skewX(-6deg) scale(1.03);
+    transform-origin: center left;
+    text-shadow: 0 0 10px #1aff13, 0 0 15px #16c60c;
+    color: #1aff13;
+    font-weight: bold;
+  }
+
+</style>
+
+<h2>Mélange : Jitter + Surbrillance</h2>
+<p class="subtitle">Voici le résultat en combinant la déformation physique et l'effet lumineux. Quelle intensité préférez-vous ?</p>
+
+<div class="cards">
+  <!-- Option A -->
+  <div class="card" data-choice="subtle" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mock-terminal mix-subtle">
+        <div class="terminal-text">
+          SYSTEME D'EXPLOITATION UNIFIE<br>
+          ROBCO INDUSTRIES<br><br>
+          Entrer le Mot de Passe<br>
+          4 ESSA(S) RESTANTS: ▮▮▮▮<br>
+          0xF13C  MODEM<br>
+          0xF148  WORLD<br>
+        </div>
+        <div class="distorted-layer">
+          SYSTEME D'EXPLOITATION UNIFIE<br>
+          ROBCO INDUSTRIES<br><br>
+          Entrer le Mot de Passe<br>
+          4 ESSA(S) RESTANTS: ▮▮▮▮<br>
+          0xF13C  MODEM<br>
+          0xF148  WORLD<br>
+        </div>
+        <div class="scanline-bar"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A. Mélange Subtil</h3>
+      <p>Léger tremblement horizontal et petite surbrillance. L'effet est présent mais reste très discret pour ne pas gêner la lecture.</p>
+    </div>
+  </div>
+
+  <!-- Option B -->
+  <div class="card" data-choice="strong" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mock-terminal mix-strong">
+        <div class="terminal-text">
+          SYSTEME D'EXPLOITATION UNIFIE<br>
+          ROBCO INDUSTRIES<br><br>
+          Entrer le Mot de Passe<br>
+          4 ESSA(S) RESTANTS: ▮▮▮▮<br>
+          0xF13C  MODEM<br>
+          0xF148  WORLD<br>
+        </div>
+        <div class="distorted-layer">
+          SYSTEME D'EXPLOITATION UNIFIE<br>
+          ROBCO INDUSTRIES<br><br>
+          Entrer le Mot de Passe<br>
+          4 ESSA(S) RESTANTS: ▮▮▮▮<br>
+          0xF13C  MODEM<br>
+          0xF148  WORLD<br>
+        </div>
+        <div class="scanline-bar"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B. Mélange Prononcé</h3>
+      <p>Un "saut" de l'image plus fort et une surbrillance très marquée au passage de la ligne. L'effet "vieil écran cassé" est accentué.</p>
+    </div>
+  </div>
+</div>

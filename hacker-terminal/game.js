@@ -1,3 +1,28 @@
+const TIMING = {
+  GLITCH_DURATION: 500,
+  TYPEWRITER_SPEED: 50,
+  RESTART_PROMPT_DELAY: 2000
+};
+
+const MESSAGES = {
+  SUCCESS_TYPEWRITER: "> MOT DE PASSE ACCEPTÉ...",
+  SUCCESS_CENTER: "ACCÈS AUTORISÉ",
+  FAILURE_TYPEWRITER: "> TENTATIVES ÉPUISÉES...",
+  FAILURE_CENTER: "VERROUILLAGE DU SYSTÈME"
+};
+
+const DOM = {
+  mainContainer: document.querySelector('main'),
+  headerContainer: document.querySelector('header'),
+  consoleContainer: document.getElementById('console'),
+  endScreen: document.getElementById('end-screen'),
+  typewriterEl: document.getElementById('end-typewriter'),
+  centerTextEl: document.getElementById('end-center-text'),
+  restartPrompt: document.getElementById('end-restart-prompt')
+};
+
+let activeTypewriterTimeout = null;
+
 const gameState = {
   intStat: 6,
   attempts: 4,
@@ -54,45 +79,54 @@ function renderGrid(words) {
   col1.innerHTML = "";
   col2.innerHTML = "";
 
-  let wordIndex = 0;
-  let specialIndex = 0;
+  const halfWords = Math.ceil(words.length / 2);
+  const wordsCol1 = words.slice(0, halfWords);
+  const wordsCol2 = words.slice(halfWords);
+
+  const halfSpecials = Math.ceil(gameState.specialSequences.length / 2);
+  const specialsCol1 = gameState.specialSequences.slice(0, halfSpecials);
+  const specialsCol2 = gameState.specialSequences.slice(halfSpecials);
+
   let baseAddr = 0xf000;
 
-  for (let i = 0; i < 34; i++) {
-    let lineContent = generateGarbage(12);
+  function fillColumn(container, columnWords, columnSpecials) {
+    const lineTypes = [
+      ...columnWords.map((w) => ({ type: "word", value: w })),
+      ...columnSpecials.map((s) => ({ type: "special", value: s })),
+      ...Array(17 - columnWords.length - columnSpecials.length).fill({
+        type: "garbage",
+      }),
+    ].sort(() => Math.random() - 0.5);
 
-    const rand = Math.random();
+    lineTypes.forEach((line) => {
+      let lineContent = generateGarbage(12);
 
-    if (wordIndex < words.length && rand > 0.6) {
-      const word = words[wordIndex];
-      const insertPos = Math.floor(Math.random() * (12 - word.length));
-      const htmlWord = `<span class="word" onclick="handleWordClick('${word}')">${word}</span>`;
+      if (line.type === "word") {
+        const word = line.value;
+        const insertPos = Math.floor(Math.random() * (12 - word.length));
+        const htmlWord = `<span class="word" onclick="handleWordClick('${word}')">${word}</span>`;
+        lineContent =
+          lineContent.substring(0, insertPos) +
+          htmlWord +
+          lineContent.substring(insertPos + word.length);
+      } else if (line.type === "special") {
+        const seq = line.value;
+        const insertPos = Math.floor(Math.random() * (12 - seq.length));
+        const htmlSeq = `<span class="special" onclick="handleSpecialClick('${seq}')">${seq}</span>`;
+        lineContent =
+          lineContent.substring(0, insertPos) +
+          htmlSeq +
+          lineContent.substring(insertPos + seq.length);
+      }
 
-      lineContent =
-        lineContent.substring(0, insertPos) +
-        htmlWord +
-        lineContent.substring(insertPos + word.length);
-      wordIndex++;
-    } else if (specialIndex < gameState.specialSequences.length && rand > 0.3) {
-      const seq = gameState.specialSequences[specialIndex];
-      const insertPos = Math.floor(Math.random() * (12 - seq.length));
-      const htmlSeq = `<span class="special" onclick="handleSpecialClick('${seq}')">${seq}</span>`;
-
-      lineContent =
-        lineContent.substring(0, insertPos) +
-        htmlSeq +
-        lineContent.substring(insertPos + seq.length);
-      specialIndex++;
-    }
-
-    const hexStr = "0x" + baseAddr.toString(16).toUpperCase();
-    const lineHTML = `<div><span class="hex-addr">${hexStr}</span> ${lineContent}</div>`;
-
-    if (i < 17) col1.innerHTML += lineHTML;
-    else col2.innerHTML += lineHTML;
-
-    baseAddr += 12;
+      const hexStr = "0x" + baseAddr.toString(16).toUpperCase();
+      container.innerHTML += `<div><span class="hex-addr">${hexStr}</span> ${lineContent}</div>`;
+      baseAddr += 12;
+    });
   }
+
+  fillColumn(col1, wordsCol1, specialsCol1);
+  fillColumn(col2, wordsCol2, specialsCol2);
 }
 
 initGame();
@@ -120,10 +154,8 @@ function handleWordClick(guess) {
 
   if (guess === gameState.password) {
     updateConsole("Correspondance Exacte!");
-    updateConsole("Veuillez Patienter");
-    updateConsole("Pendant que le Systeme");
-    updateConsole("Est Accede.");
     gameState.isLocked = true;
+    triggerEndSequence(true); // Appel au succès
   } else {
     gameState.attempts--;
     const matches = getMatchCount(guess, gameState.password);
@@ -135,6 +167,7 @@ function handleWordClick(guess) {
     if (gameState.attempts <= 0) {
       gameState.isLocked = true;
       updateConsole("Verrouillage en cours.");
+      triggerEndSequence(false); // Appel à l'échec
     }
   }
 }
@@ -178,4 +211,92 @@ function handleSpecialClick(seq) {
     updateAttemptsDisplay();
     updateConsole(" Essais Reinitialises!");
   }
+}
+
+// --- Séquence de Fin ---
+
+function typeWriterEffect(element, text, speed, callback) {
+    if (activeTypewriterTimeout) clearTimeout(activeTypewriterTimeout);
+    element.textContent = "";
+    let i = 0;
+    
+    function typeWriter() {
+        if (i < text.length) {
+            element.textContent += text.charAt(i);
+            i++;
+            activeTypewriterTimeout = setTimeout(typeWriter, speed);
+        } else if (callback) {
+            callback();
+        }
+    }
+    typeWriter();
+}
+
+function triggerEndSequence(isSuccess) {
+    // 1. Le Choc (Effet Glitch)
+    DOM.mainContainer.classList.add('glitch-effect');
+    DOM.headerContainer.classList.add('glitch-effect');
+    DOM.consoleContainer.classList.add('glitch-effect');
+
+    setTimeout(() => {
+        // 2. Le Vide
+        DOM.mainContainer.classList.remove('glitch-effect');
+        DOM.headerContainer.classList.remove('glitch-effect');
+        DOM.consoleContainer.classList.remove('glitch-effect');
+        
+        DOM.mainContainer.style.display = 'none';
+        DOM.headerContainer.style.display = 'none';
+        DOM.consoleContainer.style.display = 'none';
+        
+        DOM.endScreen.classList.remove('hidden');
+        DOM.centerTextEl.classList.remove('visible');
+        DOM.restartPrompt.classList.add('hidden');
+        DOM.typewriterEl.textContent = "";
+
+        // Textes selon le résultat
+        const typeText = isSuccess ? MESSAGES.SUCCESS_TYPEWRITER : MESSAGES.FAILURE_TYPEWRITER;
+        const centerText = isSuccess ? MESSAGES.SUCCESS_CENTER : MESSAGES.FAILURE_CENTER;
+
+        // 3. Le Verdict (Typewriter)
+        typeWriterEffect(DOM.typewriterEl, typeText, TIMING.TYPEWRITER_SPEED, () => {
+            // Après le typewriter, afficher le texte central
+            DOM.centerTextEl.textContent = centerText;
+            DOM.centerTextEl.classList.add('visible');
+
+            // 4. Relance
+            setTimeout(() => {
+                DOM.restartPrompt.classList.remove('hidden');
+                
+                // Ajouter l'écouteur de clic pour redémarrer
+                // On utilise une fonction nommée pour pouvoir la retirer ensuite
+                const resetGameHandler = () => {
+                    DOM.endScreen.removeEventListener('click', resetGameHandler);
+                    // On suppose que resetGame existe (sera défini à la tâche 4)
+                    if (typeof resetGame === 'function') resetGame();
+                };
+                DOM.endScreen.addEventListener('click', resetGameHandler);
+                
+            }, TIMING.RESTART_PROMPT_DELAY); // Délai après le texte central
+        });
+
+    }, TIMING.GLITCH_DURATION); // Durée de glitch
+}
+
+function resetGame() {
+    // Restaurer l'affichage
+    DOM.mainContainer.style.display = ''; 
+    DOM.headerContainer.style.display = '';
+    DOM.consoleContainer.style.display = '';
+    
+    // Cacher l'écran de fin
+    DOM.endScreen.classList.add('hidden');
+    
+    // Réinitialiser le state
+    gameState.attempts = 4;
+    gameState.history = [];
+    gameState.isLocked = false;
+    DOM.consoleContainer.innerHTML = "";
+    
+    // Relancer
+    initGame();
 }
