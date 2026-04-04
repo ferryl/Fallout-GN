@@ -1,5 +1,5 @@
 const gameState = {
-  intStat: 5,
+  intStat: 6,
   attempts: 4,
   password: "",
   duds: [],
@@ -10,9 +10,9 @@ const gameState = {
 };
 
 function getDifficultyParams(intLevel) {
-  if (intLevel <= 4) return { wordLength: 4, wordCount: 14, specialCount: 1 };
-  if (intLevel <= 7) return { wordLength: 5, wordCount: 10, specialCount: 2 };
-  return { wordLength: 7, wordCount: 5, specialCount: 4 };
+  if (intLevel <= 4) return { wordLength: 4, wordCount: 16, specialCount: 1 };
+  if (intLevel <= 7) return { wordLength: 5, wordCount: 12, specialCount: 2 };
+  return { wordLength: 7, wordCount: 7, specialCount: 4 };
 }
 
 function generateGarbage(length) {
