@@ -54,45 +54,54 @@ function renderGrid(words) {
   col1.innerHTML = "";
   col2.innerHTML = "";
 
-  let wordIndex = 0;
-  let specialIndex = 0;
+  const halfWords = Math.ceil(words.length / 2);
+  const wordsCol1 = words.slice(0, halfWords);
+  const wordsCol2 = words.slice(halfWords);
+
+  const halfSpecials = Math.ceil(gameState.specialSequences.length / 2);
+  const specialsCol1 = gameState.specialSequences.slice(0, halfSpecials);
+  const specialsCol2 = gameState.specialSequences.slice(halfSpecials);
+
   let baseAddr = 0xf000;
 
-  for (let i = 0; i < 34; i++) {
-    let lineContent = generateGarbage(12);
+  function fillColumn(container, columnWords, columnSpecials) {
+    const lineTypes = [
+      ...columnWords.map((w) => ({ type: "word", value: w })),
+      ...columnSpecials.map((s) => ({ type: "special", value: s })),
+      ...Array(17 - columnWords.length - columnSpecials.length).fill({
+        type: "garbage",
+      }),
+    ].sort(() => Math.random() - 0.5);
 
-    const rand = Math.random();
+    lineTypes.forEach((line) => {
+      let lineContent = generateGarbage(12);
 
-    if (wordIndex < words.length && rand > 0.6) {
-      const word = words[wordIndex];
-      const insertPos = Math.floor(Math.random() * (12 - word.length));
-      const htmlWord = `<span class="word" onclick="handleWordClick('${word}')">${word}</span>`;
+      if (line.type === "word") {
+        const word = line.value;
+        const insertPos = Math.floor(Math.random() * (12 - word.length));
+        const htmlWord = `<span class="word" onclick="handleWordClick('${word}')">${word}</span>`;
+        lineContent =
+          lineContent.substring(0, insertPos) +
+          htmlWord +
+          lineContent.substring(insertPos + word.length);
+      } else if (line.type === "special") {
+        const seq = line.value;
+        const insertPos = Math.floor(Math.random() * (12 - seq.length));
+        const htmlSeq = `<span class="special" onclick="handleSpecialClick('${seq}')">${seq}</span>`;
+        lineContent =
+          lineContent.substring(0, insertPos) +
+          htmlSeq +
+          lineContent.substring(insertPos + seq.length);
+      }
 
-      lineContent =
-        lineContent.substring(0, insertPos) +
-        htmlWord +
-        lineContent.substring(insertPos + word.length);
-      wordIndex++;
-    } else if (specialIndex < gameState.specialSequences.length && rand > 0.3) {
-      const seq = gameState.specialSequences[specialIndex];
-      const insertPos = Math.floor(Math.random() * (12 - seq.length));
-      const htmlSeq = `<span class="special" onclick="handleSpecialClick('${seq}')">${seq}</span>`;
-
-      lineContent =
-        lineContent.substring(0, insertPos) +
-        htmlSeq +
-        lineContent.substring(insertPos + seq.length);
-      specialIndex++;
-    }
-
-    const hexStr = "0x" + baseAddr.toString(16).toUpperCase();
-    const lineHTML = `<div><span class="hex-addr">${hexStr}</span> ${lineContent}</div>`;
-
-    if (i < 17) col1.innerHTML += lineHTML;
-    else col2.innerHTML += lineHTML;
-
-    baseAddr += 12;
+      const hexStr = "0x" + baseAddr.toString(16).toUpperCase();
+      container.innerHTML += `<div><span class="hex-addr">${hexStr}</span> ${lineContent}</div>`;
+      baseAddr += 12;
+    });
   }
+
+  fillColumn(col1, wordsCol1, specialsCol1);
+  fillColumn(col2, wordsCol2, specialsCol2);
 }
 
 initGame();
