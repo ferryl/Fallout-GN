@@ -1,3 +1,28 @@
+const TIMING = {
+  GLITCH_DURATION: 500,
+  TYPEWRITER_SPEED: 50,
+  RESTART_PROMPT_DELAY: 2000
+};
+
+const MESSAGES = {
+  SUCCESS_TYPEWRITER: "> MOT DE PASSE ACCEPTÉ...",
+  SUCCESS_CENTER: "ACCÈS AUTORISÉ",
+  FAILURE_TYPEWRITER: "> TENTATIVES ÉPUISÉES...",
+  FAILURE_CENTER: "VERROUILLAGE DU SYSTÈME"
+};
+
+const DOM = {
+  mainContainer: document.querySelector('main'),
+  headerContainer: document.querySelector('header'),
+  consoleContainer: document.getElementById('console'),
+  endScreen: document.getElementById('end-screen'),
+  typewriterEl: document.getElementById('end-typewriter'),
+  centerTextEl: document.getElementById('end-center-text'),
+  restartPrompt: document.getElementById('end-restart-prompt')
+};
+
+let activeTypewriterTimeout = null;
+
 const gameState = {
   intStat: 6,
   attempts: 4,
@@ -191,6 +216,7 @@ function handleSpecialClick(seq) {
 // --- Séquence de Fin ---
 
 function typeWriterEffect(element, text, speed, callback) {
+    if (activeTypewriterTimeout) clearTimeout(activeTypewriterTimeout);
     element.textContent = "";
     let i = 0;
     
@@ -198,7 +224,7 @@ function typeWriterEffect(element, text, speed, callback) {
         if (i < text.length) {
             element.textContent += text.charAt(i);
             i++;
-            setTimeout(typeWriter, speed);
+            activeTypewriterTimeout = setTimeout(typeWriter, speed);
         } else if (callback) {
             callback();
         }
@@ -207,82 +233,69 @@ function typeWriterEffect(element, text, speed, callback) {
 }
 
 function triggerEndSequence(isSuccess) {
-    const mainContainer = document.querySelector('main');
-    const headerContainer = document.querySelector('header');
-    const consoleContainer = document.getElementById('console');
-    const endScreen = document.getElementById('end-screen');
-    const typewriterEl = document.getElementById('end-typewriter');
-    const centerTextEl = document.getElementById('end-center-text');
-    const restartPrompt = document.getElementById('end-restart-prompt');
-
     // 1. Le Choc (Effet Glitch)
-    mainContainer.classList.add('glitch-effect');
-    headerContainer.classList.add('glitch-effect');
-    consoleContainer.classList.add('glitch-effect');
+    DOM.mainContainer.classList.add('glitch-effect');
+    DOM.headerContainer.classList.add('glitch-effect');
+    DOM.consoleContainer.classList.add('glitch-effect');
 
     setTimeout(() => {
         // 2. Le Vide
-        mainContainer.classList.remove('glitch-effect');
-        headerContainer.classList.remove('glitch-effect');
-        consoleContainer.classList.remove('glitch-effect');
+        DOM.mainContainer.classList.remove('glitch-effect');
+        DOM.headerContainer.classList.remove('glitch-effect');
+        DOM.consoleContainer.classList.remove('glitch-effect');
         
-        mainContainer.style.display = 'none';
-        headerContainer.style.display = 'none';
-        consoleContainer.style.display = 'none';
+        DOM.mainContainer.style.display = 'none';
+        DOM.headerContainer.style.display = 'none';
+        DOM.consoleContainer.style.display = 'none';
         
-        endScreen.classList.remove('hidden');
-        centerTextEl.classList.remove('visible');
-        restartPrompt.classList.add('hidden');
-        typewriterEl.textContent = "";
+        DOM.endScreen.classList.remove('hidden');
+        DOM.centerTextEl.classList.remove('visible');
+        DOM.restartPrompt.classList.add('hidden');
+        DOM.typewriterEl.textContent = "";
 
         // Textes selon le résultat
-        const typeText = isSuccess ? "> MOT DE PASSE ACCEPTÉ..." : "> TENTATIVES ÉPUISÉES...";
-        const centerText = isSuccess ? "ACCÈS AUTORISÉ" : "VERROUILLAGE DU SYSTÈME";
+        const typeText = isSuccess ? MESSAGES.SUCCESS_TYPEWRITER : MESSAGES.FAILURE_TYPEWRITER;
+        const centerText = isSuccess ? MESSAGES.SUCCESS_CENTER : MESSAGES.FAILURE_CENTER;
 
         // 3. Le Verdict (Typewriter)
-        typeWriterEffect(typewriterEl, typeText, 50, () => {
+        typeWriterEffect(DOM.typewriterEl, typeText, TIMING.TYPEWRITER_SPEED, () => {
             // Après le typewriter, afficher le texte central
-            centerTextEl.textContent = centerText;
-            centerTextEl.classList.add('visible');
+            DOM.centerTextEl.textContent = centerText;
+            DOM.centerTextEl.classList.add('visible');
 
             // 4. Relance
             setTimeout(() => {
-                restartPrompt.classList.remove('hidden');
+                DOM.restartPrompt.classList.remove('hidden');
                 
                 // Ajouter l'écouteur de clic pour redémarrer
                 // On utilise une fonction nommée pour pouvoir la retirer ensuite
                 const resetGameHandler = () => {
-                    document.removeEventListener('click', resetGameHandler);
+                    DOM.endScreen.removeEventListener('click', resetGameHandler);
                     // On suppose que resetGame existe (sera défini à la tâche 4)
                     if (typeof resetGame === 'function') resetGame();
                 };
-                document.addEventListener('click', resetGameHandler);
+                DOM.endScreen.addEventListener('click', resetGameHandler);
                 
-            }, 2000); // 2 secondes après le texte central
+            }, TIMING.RESTART_PROMPT_DELAY); // Délai après le texte central
         });
 
-    }, 500); // 0.5s de glitch
+    }, TIMING.GLITCH_DURATION); // Durée de glitch
 }
 
 function resetGame() {
-    const mainContainer = document.querySelector('main');
-    const headerContainer = document.querySelector('header');
-    const consoleContainer = document.getElementById('console');
-    const endScreen = document.getElementById('end-screen');
-
     // Restaurer l'affichage
-    mainContainer.style.display = ''; 
-    headerContainer.style.display = '';
-    consoleContainer.style.display = '';
+    DOM.mainContainer.style.display = ''; 
+    DOM.headerContainer.style.display = '';
+    DOM.consoleContainer.style.display = '';
     
     // Cacher l'écran de fin
-    endScreen.classList.add('hidden');
+    DOM.endScreen.classList.add('hidden');
     
     // Réinitialiser le state
     gameState.attempts = 4;
     gameState.history = [];
     gameState.isLocked = false;
-    document.getElementById("console").innerHTML = "";
+    DOM.consoleContainer.innerHTML = "";
     
     // Relancer
     initGame();
