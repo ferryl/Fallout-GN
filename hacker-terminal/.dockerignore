@@ -1,0 +1,12 @@
+# Exclure les fichiers de développement et de documentation pour garder l'image légère
+.git
+.gitignore
+docs/
+hacker-terminal/brainstorm/
+hacker-terminal/docs/
+hacker-terminal/superpowers/
+hacker-terminal/.superpowers/
+README.md
+LICENSE
+Dockerfile
+.dockerignore
