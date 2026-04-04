@@ -1,32 +1,62 @@
 :root {
-  --phosphor: #16c60c;
-  --bg-color: #000000;
+    --phosphor: #16c60c;
+    --bg-color: #000000;
 
-  --crt-red: rgb(218, 49, 49);
-  --crt-green: rgb(112, 159, 115);
-  --crt-blue: rgb(40, 129, 206);
+    --crt-red: rgb(218, 49, 49);
+    --crt-green: rgb(112, 159, 115);
+    --crt-blue: rgb(40, 129, 206);
 }
 
 /* Global */
 html {
-  font-size: 1.5rem;
-  font-family: "Courier New", monospace;
-  min-height: 100%;
+    font-size: 1.5rem;
+    font-family: "Courier New", monospace;
+    min-height: 100%;
 }
+
 main {
-  height: 100vh;
-  height: 100dvh;
-  color: rgba(255, 255, 255, 0.75);
+    height: 100vh;
+    height: 100dvh;
+    color: rgba(255, 255, 255, 0.75);
 }
 
 body {
-    background-color: var(--bg-color);
+    background-color: rgb(25, 25, 30);
+    /* New background color */
     color: var(--phosphor);
     font-family: 'VT323', monospace;
     font-size: 24px;
     margin: 0;
     overflow: hidden;
-    text-shadow: 0 0 5px var(--phosphor); /* Glow effect */
+    text-shadow: 0 0 0.2em currentColor, 1px 1px rgba(255, 0, 255, 0.5),
+        -1px -1px rgba(0, 255, 255, 0.4);
+}
+
+body::before,
+body::after {
+    content: "";
+    transform: translateZ(0);
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    position: absolute;
+    height: 100vh;
+    width: 100vw;
+    left: 0;
+    top: 0;
+    z-index: 50;
+}
+
+body::before {
+    background: repeating-linear-gradient(var(--crt-red) 0px,
+            var(--crt-green) 2px,
+            var(--crt-blue) 4px);
+}
+
+body::after {
+    background: repeating-linear-gradient(90deg,
+            var(--crt-red) 1px,
+            var(--crt-green) 2px,
+            var(--crt-blue) 3px);
 }
 
 .crt-overlay {
@@ -35,15 +65,41 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: repeating-linear-gradient(
-        0deg,
-        rgba(0, 0, 0, 0.15),
-        rgba(0, 0, 0, 0.15) 1px,
-        transparent 1px,
-        transparent 2px
-    );
-    pointer-events: none;
+    background: linear-gradient(to bottom,
+            rgba(18, 16, 16, 0) 50%,
+            rgba(0, 0, 0, 0.25) 50%);
+    background-size: 100% 8px;
     z-index: 100;
+    pointer-events: none;
+}
+
+.scanline {
+    width: 100%;
+    height: 100px;
+    z-index: 99;
+    background: linear-gradient(0deg,
+            rgba(0, 0, 0, 0) 0%,
+            rgba(255, 255, 255, 0.2) 10%,
+            rgba(0, 0, 0, 0.1) 100%);
+    opacity: 0.1;
+    position: fixed;
+    bottom: 100%;
+    animation: scanline 10s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes scanline {
+    0% {
+        bottom: 100%;
+    }
+
+    80% {
+        bottom: 100%;
+    }
+
+    100% {
+        bottom: 0%;
+    }
 }
 
 .terminal-container {
@@ -54,61 +110,25 @@ body {
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    position: relative; /* Keep this for child absolute positioning */
-
-    /* New CRT styles */
-    background-color: rgb(25, 25, 30); /* New background color */
-    text-shadow: 0 0 0.2em currentColor, 1px 1px rgba(255, 0, 255, 0.5),
-        -1px -1px rgba(0, 255, 255, 0.4);
-    
-    /* Pseudo-elements for scanlines */
-    &:before,
-    &:after {
-      content: "";
-      transform: translateZ(0);
-      pointer-events: none;
-      //opacity: 0.5; /* Keeping original opacity comment as it might be relevant for desired effect */
-      mix-blend-mode: overlay;
-      position: absolute;
-      height: 100%;
-      width: 100%;
-      left: 0;
-      top: 0;
-      z-index: 1;
-    }
-
-    &:before {
-      background: repeating-linear-gradient(
-        var(--crt-red) 0px,
-        var(--crt-green) 2px,
-        var(--crt-blue) 4px
-      );
-    }
-    &:after {
-      background: repeating-linear-gradient(
-        90deg,
-        var(--crt-red) 1px,
-        var(--crt-green) 2px,
-        var(--crt-blue) 3px
-      );
-    }
+    position: relative;
+    /* Keep this for child absolute positioning */
 }
 
 .grid-container {
     display: flex;
-    gap: 40px;
-    flex-grow: 1;
+    gap: 150px;
+    justify-content: center;
 }
 
 .column {
-    flex: 1;
     display: flex;
     flex-direction: column;
+    font-size: 24px;
 }
 
 .hex-addr {
     display: inline-block;
-    width: 80px;
+    width: 2.5em;
 }
 
 .word:hover {
@@ -131,32 +151,50 @@ body {
 
 /* Other utility classes from your provided CSS */
 .pink {
-  color: pink;
+    color: pink;
 }
+
 .yellow {
-  color: yellow;
+    color: yellow;
 }
+
 .lightblue {
-  color: lightblue;
+    color: lightblue;
 }
-.code { /* This assumes a specific HTML structure not currently present */
-  color: attr(data-color);
-  animation: typewriter 1s steps(14) 1s 1 normal both;
-  line-height: 1;
-  margin: 0;
-  display: inline-block;
-  white-space: nowrap;
-  overflow-x: hidden;
+
+.code {
+    /* This assumes a specific HTML structure not currently present */
+    color: attr(data-color);
+    animation: typewriter 1s steps(14) 1s 1 normal both;
+    line-height: 1;
+    margin: 0;
+    display: inline-block;
+    white-space: nowrap;
+    overflow-x: hidden;
 }
-.cursor { /* This assumes a specific HTML structure not currently present */
-  display: inline-block;
-  animation: blinkTextCursor 500ms infinite normal;
+
+.cursor {
+    /* This assumes a specific HTML structure not currently present */
+    display: inline-block;
+    animation: blinkTextCursor 500ms infinite normal;
 }
+
 @keyframes typewriter {
-  from { width: 0; }
-  to { width: 100%; }
+    from {
+        width: 0;
+    }
+
+    to {
+        width: 100%;
+    }
 }
+
 @keyframes blinkTextCursor {
-  from { opacity: 0; }
-  to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
