@@ -188,3 +188,79 @@ function handleSpecialClick(seq) {
     updateConsole(" Essais Reinitialises!");
   }
 }
+
+// --- Séquence de Fin ---
+
+function typeWriterEffect(element, text, speed, callback) {
+    element.textContent = "";
+    let i = 0;
+    
+    function typeWriter() {
+        if (i < text.length) {
+            element.textContent += text.charAt(i);
+            i++;
+            setTimeout(typeWriter, speed);
+        } else if (callback) {
+            callback();
+        }
+    }
+    typeWriter();
+}
+
+function triggerEndSequence(isSuccess) {
+    const mainContainer = document.querySelector('main');
+    const headerContainer = document.querySelector('header');
+    const consoleContainer = document.getElementById('console');
+    const endScreen = document.getElementById('end-screen');
+    const typewriterEl = document.getElementById('end-typewriter');
+    const centerTextEl = document.getElementById('end-center-text');
+    const restartPrompt = document.getElementById('end-restart-prompt');
+
+    // 1. Le Choc (Effet Glitch)
+    mainContainer.classList.add('glitch-effect');
+    headerContainer.classList.add('glitch-effect');
+    consoleContainer.classList.add('glitch-effect');
+
+    setTimeout(() => {
+        // 2. Le Vide
+        mainContainer.classList.remove('glitch-effect');
+        headerContainer.classList.remove('glitch-effect');
+        consoleContainer.classList.remove('glitch-effect');
+        
+        mainContainer.style.display = 'none';
+        headerContainer.style.display = 'none';
+        consoleContainer.style.display = 'none';
+        
+        endScreen.classList.remove('hidden');
+        centerTextEl.classList.remove('visible');
+        restartPrompt.classList.add('hidden');
+        typewriterEl.textContent = "";
+
+        // Textes selon le résultat
+        const typeText = isSuccess ? "> MOT DE PASSE ACCEPTÉ..." : "> TENTATIVES ÉPUISÉES...";
+        const centerText = isSuccess ? "ACCÈS AUTORISÉ" : "VERROUILLAGE DU SYSTÈME";
+
+        // 3. Le Verdict (Typewriter)
+        typeWriterEffect(typewriterEl, typeText, 50, () => {
+            // Après le typewriter, afficher le texte central
+            centerTextEl.textContent = centerText;
+            centerTextEl.classList.add('visible');
+
+            // 4. Relance
+            setTimeout(() => {
+                restartPrompt.classList.remove('hidden');
+                
+                // Ajouter l'écouteur de clic pour redémarrer
+                // On utilise une fonction nommée pour pouvoir la retirer ensuite
+                const resetGameHandler = () => {
+                    document.removeEventListener('click', resetGameHandler);
+                    // On suppose que resetGame existe (sera défini à la tâche 4)
+                    if (typeof resetGame === 'function') resetGame();
+                };
+                document.addEventListener('click', resetGameHandler);
+                
+            }, 2000); // 2 secondes après le texte central
+        });
+
+    }, 500); // 0.5s de glitch
+}
