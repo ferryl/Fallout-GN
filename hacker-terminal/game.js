@@ -194,7 +194,7 @@ function handleSpecialClick(seq) {
       const dudToRemove =
         availableDuds[Math.floor(Math.random() * availableDuds.length)];
       gameState.dudsRemoved.push(dudToRemove);
-      updateConsole(" Dud Retire: " + dudToRemove);
+      updateConsole(" Leurre retire: " + dudToRemove);
 
       const allSpans = document.querySelectorAll(".word");
       allSpans.forEach((span) => {
