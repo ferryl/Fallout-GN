@@ -89,6 +89,19 @@ function renderGrid(words) {
 
   let baseAddr = 0xf000;
 
+  function escapeHTML(str) {
+    return str.replace(/[&<>'"]/g, function(tag) {
+      const charsToReplace = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        "'": '&#39;',
+        '"': '&quot;'
+      };
+      return charsToReplace[tag] || tag;
+    });
+  }
+
   function fillColumn(container, columnWords, columnSpecials) {
     const lineTypes = [
       ...columnWords.map((w) => ({ type: "word", value: w })),
@@ -106,17 +119,19 @@ function renderGrid(words) {
         const insertPos = Math.floor(Math.random() * (12 - word.length));
         const htmlWord = `<span class="word" onclick="handleWordClick('${word}')">${word}</span>`;
         lineContent =
-          lineContent.substring(0, insertPos) +
+          escapeHTML(lineContent.substring(0, insertPos)) +
           htmlWord +
-          lineContent.substring(insertPos + word.length);
+          escapeHTML(lineContent.substring(insertPos + word.length));
       } else if (line.type === "special") {
         const seq = line.value;
         const insertPos = Math.floor(Math.random() * (12 - seq.length));
-        const htmlSeq = `<span class="special" onclick="handleSpecialClick('${seq}')">${seq}</span>`;
+        const htmlSeq = `<span class="special" onclick="handleSpecialClick(this.textContent)">${escapeHTML(seq)}</span>`;
         lineContent =
-          lineContent.substring(0, insertPos) +
+          escapeHTML(lineContent.substring(0, insertPos)) +
           htmlSeq +
-          lineContent.substring(insertPos + seq.length);
+          escapeHTML(lineContent.substring(insertPos + seq.length));
+      } else {
+        lineContent = escapeHTML(lineContent);
       }
 
       const hexStr = "0x" + baseAddr.toString(16).toUpperCase();
@@ -142,7 +157,7 @@ function getMatchCount(guess, pass) {
 function updateConsole(text) {
   const consoleDiv = document.getElementById("console");
   gameState.history.push(text);
-  if (gameState.history.length > 5) gameState.history.shift();
+  if (gameState.history.length > 7) gameState.history.shift();
 
   consoleDiv.innerHTML = gameState.history.join("<br>");
 }
@@ -182,6 +197,16 @@ function updateAttemptsDisplay() {
 function handleSpecialClick(seq) {
   if (gameState.isLocked) return;
 
+  // Remplacer la séquence par des points (usage unique)
+  const allSpecials = document.querySelectorAll(".special");
+  allSpecials.forEach((span) => {
+    if (span.textContent === seq) {
+      span.textContent = ".".repeat(seq.length);
+      span.classList.add("removed");
+      span.onclick = null;
+    }
+  });
+
   updateConsole(`>${seq}`);
 
   const effect = Math.random() > 0.33;
@@ -216,87 +241,87 @@ function handleSpecialClick(seq) {
 // --- Séquence de Fin ---
 
 function typeWriterEffect(element, text, speed, callback) {
-    if (activeTypewriterTimeout) clearTimeout(activeTypewriterTimeout);
-    element.textContent = "";
-    let i = 0;
-    
-    function typeWriter() {
-        if (i < text.length) {
-            element.textContent += text.charAt(i);
-            i++;
-            activeTypewriterTimeout = setTimeout(typeWriter, speed);
-        } else if (callback) {
-            callback();
-        }
+  if (activeTypewriterTimeout) clearTimeout(activeTypewriterTimeout);
+  element.textContent = "";
+  let i = 0;
+
+  function typeWriter() {
+    if (i < text.length) {
+      element.textContent += text.charAt(i);
+      i++;
+      activeTypewriterTimeout = setTimeout(typeWriter, speed);
+    } else if (callback) {
+      callback();
     }
-    typeWriter();
+  }
+  typeWriter();
 }
 
 function triggerEndSequence(isSuccess) {
-    // 1. Le Choc (Effet Glitch)
-    DOM.mainContainer.classList.add('glitch-effect');
-    DOM.headerContainer.classList.add('glitch-effect');
-    DOM.consoleContainer.classList.add('glitch-effect');
+  // 1. Le Choc (Effet Glitch)
+  DOM.mainContainer.classList.add('glitch-effect');
+  DOM.headerContainer.classList.add('glitch-effect');
+  DOM.consoleContainer.classList.add('glitch-effect');
 
-    setTimeout(() => {
-        // 2. Le Vide
-        DOM.mainContainer.classList.remove('glitch-effect');
-        DOM.headerContainer.classList.remove('glitch-effect');
-        DOM.consoleContainer.classList.remove('glitch-effect');
-        
-        DOM.mainContainer.style.display = 'none';
-        DOM.headerContainer.style.display = 'none';
-        DOM.consoleContainer.style.display = 'none';
-        
-        DOM.endScreen.classList.remove('hidden');
-        DOM.centerTextEl.classList.remove('visible');
-        DOM.restartPrompt.classList.add('hidden');
-        DOM.typewriterEl.textContent = "";
+  setTimeout(() => {
+    // 2. Le Vide
+    DOM.mainContainer.classList.remove('glitch-effect');
+    DOM.headerContainer.classList.remove('glitch-effect');
+    DOM.consoleContainer.classList.remove('glitch-effect');
 
-        // Textes selon le résultat
-        const typeText = isSuccess ? MESSAGES.SUCCESS_TYPEWRITER : MESSAGES.FAILURE_TYPEWRITER;
-        const centerText = isSuccess ? MESSAGES.SUCCESS_CENTER : MESSAGES.FAILURE_CENTER;
+    DOM.mainContainer.style.display = 'none';
+    DOM.headerContainer.style.display = 'none';
+    DOM.consoleContainer.style.display = 'none';
 
-        // 3. Le Verdict (Typewriter)
-        typeWriterEffect(DOM.typewriterEl, typeText, TIMING.TYPEWRITER_SPEED, () => {
-            // Après le typewriter, afficher le texte central
-            DOM.centerTextEl.textContent = centerText;
-            DOM.centerTextEl.classList.add('visible');
+    DOM.endScreen.classList.remove('hidden');
+    DOM.centerTextEl.classList.remove('visible');
+    DOM.restartPrompt.classList.add('hidden');
+    DOM.typewriterEl.textContent = "";
 
-            // 4. Relance
-            setTimeout(() => {
-                DOM.restartPrompt.classList.remove('hidden');
-                
-                // Ajouter l'écouteur de clic pour redémarrer
-                // On utilise une fonction nommée pour pouvoir la retirer ensuite
-                const resetGameHandler = () => {
-                    DOM.endScreen.removeEventListener('click', resetGameHandler);
-                    // On suppose que resetGame existe (sera défini à la tâche 4)
-                    if (typeof resetGame === 'function') resetGame();
-                };
-                DOM.endScreen.addEventListener('click', resetGameHandler);
-                
-            }, TIMING.RESTART_PROMPT_DELAY); // Délai après le texte central
-        });
+    // Textes selon le résultat
+    const typeText = isSuccess ? MESSAGES.SUCCESS_TYPEWRITER : MESSAGES.FAILURE_TYPEWRITER;
+    const centerText = isSuccess ? MESSAGES.SUCCESS_CENTER : MESSAGES.FAILURE_CENTER;
 
-    }, TIMING.GLITCH_DURATION); // Durée de glitch
+    // 3. Le Verdict (Typewriter)
+    typeWriterEffect(DOM.typewriterEl, typeText, TIMING.TYPEWRITER_SPEED, () => {
+      // Après le typewriter, afficher le texte central
+      DOM.centerTextEl.textContent = centerText;
+      DOM.centerTextEl.classList.add('visible');
+
+      // 4. Relance
+      setTimeout(() => {
+        DOM.restartPrompt.classList.remove('hidden');
+
+        // Ajouter l'écouteur de clic pour redémarrer
+        // On utilise une fonction nommée pour pouvoir la retirer ensuite
+        const resetGameHandler = () => {
+          DOM.endScreen.removeEventListener('click', resetGameHandler);
+          // On suppose que resetGame existe (sera défini à la tâche 4)
+          if (typeof resetGame === 'function') resetGame();
+        };
+        DOM.endScreen.addEventListener('click', resetGameHandler);
+
+      }, TIMING.RESTART_PROMPT_DELAY); // Délai après le texte central
+    });
+
+  }, TIMING.GLITCH_DURATION); // Durée de glitch
 }
 
 function resetGame() {
-    // Restaurer l'affichage
-    DOM.mainContainer.style.display = ''; 
-    DOM.headerContainer.style.display = '';
-    DOM.consoleContainer.style.display = '';
-    
-    // Cacher l'écran de fin
-    DOM.endScreen.classList.add('hidden');
-    
-    // Réinitialiser le state
-    gameState.attempts = 4;
-    gameState.history = [];
-    gameState.isLocked = false;
-    DOM.consoleContainer.innerHTML = "";
-    
-    // Relancer
-    initGame();
+  // Restaurer l'affichage
+  DOM.mainContainer.style.display = '';
+  DOM.headerContainer.style.display = '';
+  DOM.consoleContainer.style.display = '';
+
+  // Cacher l'écran de fin
+  DOM.endScreen.classList.add('hidden');
+
+  // Réinitialiser le state
+  gameState.attempts = 4;
+  gameState.history = [];
+  gameState.isLocked = false;
+  DOM.consoleContainer.innerHTML = "";
+
+  // Relancer
+  initGame();
 }
